@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<style>
+		body { font-family: sans-serif; font-size: 10pt; }
+		h1 { font-size: 18pt; margin-bottom: 16px; }
+		table { border-collapse: collapse; width: 100%; }
+		th, td { border: 1px solid #777; padding: 6px; text-align: left; }
+		th { background: #eee; }
+	</style>
+</head>
+
+<body>
+<h1>Klaes Orders</h1>
+<table>
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th>Modified</th>
+			<th>Modified By</th>
+			<th>Order Number</th>
+			<th>Status</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for order in sales_orders %}
+		<tr>
+			<td>{{ order.VKB_ID or "" }}</td>
+			<td>{{ order.VKB_MODDATE or "" }}</td>
+			<td>{{ order.VKB_MODUSER or "" }}</td>
+			<td>{{ order.VKB_NUMMER or "" }}</td>
+			<td>{{ order.VKB_STATE or "" }}</td>
+		</tr>
+		{% else %}
+		<tr>
+			<td colspan="5">No sales orders found.</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+</body>
+</html>
