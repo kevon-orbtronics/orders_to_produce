@@ -7,37 +7,29 @@ from dotenv import load_dotenv
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 
-def get_connection_to_database():
-    cnxn = pyodbc.connect('TrustServerCertificate=yes;DRIVER={ODBC Driver 18 for SQL Server};SERVER='+os.getenv('DATABASE_SERVER')+';DATABASE='+os.getenv('DATABASE_NAME')+';ENCRYPT=yes;UID='+os.getenv('DATABASE_USERNAME')+';PWD='+os.getenv('DATABASE_PASSWORD'))
-    return cnxn
-
 def get_all_sales_orders(database_name = os.getenv('DATABASE_NAME')):
-    #cnxn = get_connection_to_database()
     cnxn = pyodbc.connect('TrustServerCertificate=yes;DRIVER={ODBC Driver 18 for SQL Server};SERVER='+os.getenv('DATABASE_SERVER')+';DATABASE='+os.getenv('DATABASE_NAME')+';ENCRYPT=yes;UID='+os.getenv('DATABASE_USERNAME')+';PWD='+os.getenv('DATABASE_PASSWORD'))
     with cnxn:
         cursor = cnxn.cursor()
         try:
             cursor.execute(f"""
-            SELECT TOP 20
-                [VKB_ID],
-                [VKB_MODDATE],
-                [VKB_MODUSER],
-                [VKB_NUMMER],
-                [VKB_STATE]
+            SELECT TOP 2
+                [BSX_ID],
+                [BSX_MODDATE],
+                [BSX_BELEGNR]
             FROM 
-                [{database_name}].[dbo].[VKVORGANGBELEG]
-            ORDER BY VKB_MODDATE DESC;
+                [{database_name}].[dbo].[VKBELEGSTUB]
+            ORDER BY BSX_MODDATE DESC;
             """
             )
             row = cursor.fetchall()
+            print(f"Fetched {len(row)} sales orders from the database.")
             sales_orders = []
             for r in row:
                 sales_order = {
-                    "VKB_ID": r[0],
-                    "VKB_MODDATE": r[1],
-                    "VKB_MODUSER": r[2],
-                    "VKB_NUMMER": r[3],
-                    "VKB_STATE": r[4]
+                    "BSX_ID": r[0],
+                    "BSX_MODDATE": r[1],
+                    "BSX_BELEGNR": r[2],
                 }
                 sales_orders.append(sales_order)
             return sales_orders
@@ -72,10 +64,10 @@ def build_sales_orders_xml(sales_orders):
         document = ET.SubElement(document_list, "beleg", {"Datatype": "Class", "Count": "6"})
         ET.SubElement(document, "version", {"Datatype": "Int32"}).text = "1"
         ET.SubElement(document, "belegstubid", {"Datatype": "Id"}).text = str(
-            sales_order.get("VKB_ID") or ""
+            sales_order.get("BSX_ID") or ""
         )
         ET.SubElement(document, "auftragnr", {"Datatype": "String"}).text = str(
-            sales_order.get("VKB_NUMMER") or ""
+            sales_order.get("BSX_BELEGNR") or ""
         )
         ET.SubElement(document, "leiferscheinnr", {"Datatype": "String"})
         ET.SubElement(document, "rechnungnr", {"Datatype": "String"})
@@ -96,3 +88,4 @@ def download_sales_orders_xml():
     frappe.local.response.filecontent = xml_content.encode("utf-8")
     frappe.local.response.type = "download"
 
+get_all_sales_orders()

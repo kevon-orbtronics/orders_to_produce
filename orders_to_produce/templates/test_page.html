@@ -20,19 +20,15 @@
 		<tr>
 			<th>ID</th>
 			<th>Modified</th>
-			<th>Modified By</th>
 			<th>Order Number</th>
-			<th>Status</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for order in sales_orders %}
 		<tr>
-			<td>{{ order.VKB_ID or "" }}</td>
-			<td>{{ order.VKB_MODDATE or "" }}</td>
-			<td>{{ order.VKB_MODUSER or "" }}</td>
-			<td>{{ order.VKB_NUMMER or "" }}</td>
-			<td>{{ order.VKB_STATE or "" }}</td>
+			<td>{{ order.BSX_ID or "" }}</td>
+			<td>{{ order.BSX_MODDATE or "" }}</td>
+			<td>{{ order.BSX_BELEGNR or "" }}</td>
 		</tr>
 		{% else %}
 		<tr>
