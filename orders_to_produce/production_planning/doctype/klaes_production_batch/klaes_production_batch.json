@@ -1,0 +1,65 @@
+
+{
+    "doctype": "DocType",
+    "name": "Klaes Production Batch",
+    "module": "Production Planning",
+    "engine": "InnoDB",
+
+    "autoname": "format:KPB-{####}",
+    "naming_rule": "Expression",
+    "is_submittable": 0,
+    "allow_rename": 0,
+
+    "fields": [
+        {
+            "fieldname": "production_deadline",
+            "label": "Production Deadline",
+            "fieldtype": "Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "status",
+            "label": "Status",
+            "fieldtype": "Select",
+            "options": "Draft\nReady\nIn Progress\nCompleted\nCancelled",
+            "default": "Draft",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "source_system",
+            "label": "Source System",
+            "fieldtype": "Data",
+            "default": "Klaes",
+            "read_only": 1
+        },
+        {
+            "fieldname": "orders",
+            "label": "Production Orders",
+            "fieldtype": "Table",
+            "options": "Production Batch Orders"
+        },
+        {
+            "fieldname": "production_notes",
+            "label": "Production Notes",
+            "fieldtype": "Small Text"
+        }
+    ],
+
+    "field_order": [
+        "production_deadline",
+        "status",
+        "source_system",
+        "orders",
+        "production_notes"
+    ],
+
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        }
+    ]
+}
