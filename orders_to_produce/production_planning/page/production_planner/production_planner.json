@@ -1,0 +1,20 @@
+{
+ "doctype": "Page",
+ "name": "production-planner",
+ "page_name": "production-planner",
+ "title": "Production Planner",
+ "module": "Production Planning",
+ "standard": "Yes",
+ "system_page": 0,
+ "roles": [
+  {
+   "role": "Manufacturing User"
+  },
+  {
+   "role": "Manufacturing Manager"
+  },
+  {
+   "role": "System Manager"
+  }
+ ]
+}
