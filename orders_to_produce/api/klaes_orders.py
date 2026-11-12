@@ -20,6 +20,9 @@ PLANNER_ROLES = ("Manufacturing User", "Manufacturing Manager", "System Manager"
 # A Sales Order in a batch with one of these statuses cannot go into another batch.
 ACTIVE_BATCH_STATUSES = ("Draft", "Ready", "In Progress")
 
+# Sales Order field that holds the Klaes document number (Q... quotation / O... production order).
+KLAES_NUMBER_FIELD = "klaes_doc_number"
+
 # SQL Server allows ~2100 parameters per query, so look numbers up in chunks.
 KLAES_CHUNK_SIZE = 500
 
@@ -39,7 +42,7 @@ def get_orders_for_planning():
 	)
 
 	so_names = [so.name for so in candidates]
-	klaes_orders = get_klaes_orders([so.custom_klaes_document_number for so in candidates])
+	klaes_orders = get_klaes_orders([so.get(KLAES_NUMBER_FIELD) for so in candidates])
 	in_batches = get_active_batches(so_names)
 	with_work_orders = get_sales_orders_with_work_orders(so_names)
 	paid_amounts = get_paid_amounts(candidates)
@@ -47,7 +50,8 @@ def get_orders_for_planning():
 	orders, skipped = [], []
 
 	for so in candidates:
-		klaes = klaes_orders.get(so.custom_klaes_document_number)
+		klaes_number = so.get(KLAES_NUMBER_FIELD)
+		klaes = klaes_orders.get(klaes_number)
 		so_total = flt(so.rounded_total) or flt(so.grand_total)
 		paid = paid_amounts.get(so.name, 0)
 		paid_percent = flt(paid / so_total * 100, 1) if so_total else 0
@@ -65,7 +69,7 @@ def get_orders_for_planning():
 
 		row = {
 			"sales_order": so.name,
-			"klaes_document_number": so.custom_klaes_document_number,
+			"klaes_document_number": klaes_number,
 			"customer": so.customer,
 			"customer_name": so.customer_name,
 			"transaction_date": so.transaction_date,
@@ -92,12 +96,12 @@ def get_candidate_sales_orders():
 		filters={
 			"docstatus": 1,
 			# Klaes production orders start with "O"; "Q" numbers are only quotations.
-			"custom_klaes_document_number": ["like", "O%"],
+			KLAES_NUMBER_FIELD: ["like", "O%"],
 			"status": ["not in", ["Closed", "Completed", "On Hold"]],
 		},
 		fields=[
 			"name",
-			"custom_klaes_document_number",
+			KLAES_NUMBER_FIELD,
 			"customer",
 			"customer_name",
 			"transaction_date",

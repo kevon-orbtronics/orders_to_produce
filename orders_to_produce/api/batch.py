@@ -7,6 +7,7 @@ Klaes Production Batch controller, so they apply however a batch is created.
 import frappe
 
 from orders_to_produce.api.klaes_db import get_connection
+from orders_to_produce.api.klaes_orders import KLAES_NUMBER_FIELD
 from orders_to_produce.api.sales_orders_to_xml import build_sales_orders_xml
 
 PLANNER_ROLES = ("Manufacturing User", "Manufacturing Manager", "System Manager")
@@ -75,7 +76,7 @@ def get_klaes_numbers(sales_orders):
 		frappe.get_all(
 			"Sales Order",
 			filters={"name": ["in", sales_orders]},
-			fields=["name", "custom_klaes_document_number"],
+			fields=["name", KLAES_NUMBER_FIELD],
 			as_list=True,
 		)
 	)
