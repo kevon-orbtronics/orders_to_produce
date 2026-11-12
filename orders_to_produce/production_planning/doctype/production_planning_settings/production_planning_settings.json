@@ -1,0 +1,50 @@
+{
+    "doctype": "DocType",
+    "name": "Production Planning Settings",
+    "module": "Production Planning",
+    "issingle": 1,
+    "engine": "InnoDB",
+
+    "fields": [
+        {
+            "fieldname": "raw_material_warehouse",
+            "label": "Raw Material Warehouse",
+            "fieldtype": "Link",
+            "options": "Warehouse",
+            "reqd": 1,
+            "description": "Stock in this warehouse (and every warehouse under it, if it is a group) is used for the material check."
+        },
+        {
+            "fieldname": "min_paid_percent",
+            "label": "Minimum Paid (%)",
+            "fieldtype": "Percent",
+            "default": "50",
+            "reqd": 1,
+            "description": "A Sales Order must be at least this % paid (advances + invoice payments) to appear in the Production Planner."
+        }
+    ],
+
+    "field_order": [
+        "raw_material_warehouse",
+        "min_paid_percent"
+    ],
+
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        },
+        {
+            "role": "Manufacturing Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        },
+        {
+            "role": "Manufacturing User",
+            "read": 1
+        }
+    ]
+}
