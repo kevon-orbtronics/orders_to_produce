@@ -1,0 +1,83 @@
+{
+    "doctype": "DocType",
+    "name": "Production Batch Items",
+    "module": "Production Planning",
+    "istable": 1,
+    "engine": "InnoDB",
+    "editable_grid": 0,
+
+    "fields": [
+        {
+            "fieldname": "sales_order",
+            "label": "Sales Order",
+            "fieldtype": "Link",
+            "options": "Sales Order",
+            "reqd": 1,
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 2
+        },
+        {
+            "fieldname": "sales_order_item",
+            "label": "Sales Order Item",
+            "fieldtype": "Data",
+            "read_only": 1,
+            "hidden": 1
+        },
+        {
+            "fieldname": "item_code",
+            "label": "Item",
+            "fieldtype": "Link",
+            "options": "Item",
+            "reqd": 1,
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 3
+        },
+        {
+            "fieldname": "qty",
+            "label": "Qty",
+            "fieldtype": "Float",
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 1
+        },
+        {
+            "fieldname": "work_order",
+            "label": "Work Order",
+            "fieldtype": "Link",
+            "options": "Work Order",
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 2
+        },
+        {
+            "fieldname": "work_order_status",
+            "label": "Work Order Status",
+            "fieldtype": "Data",
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 1
+        },
+        {
+            "fieldname": "produced_qty",
+            "label": "Produced Qty",
+            "fieldtype": "Float",
+            "read_only": 1,
+            "in_list_view": 1,
+            "columns": 1
+        }
+    ],
+
+    "field_order": [
+        "sales_order",
+        "sales_order_item",
+        "item_code",
+        "qty",
+        "work_order",
+        "work_order_status",
+        "produced_qty"
+    ],
+
+    "permissions": []
+}

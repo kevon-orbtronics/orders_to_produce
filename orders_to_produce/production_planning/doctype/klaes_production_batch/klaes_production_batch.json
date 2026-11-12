@@ -39,6 +39,14 @@
             "options": "Production Batch Orders"
         },
         {
+            "fieldname": "items",
+            "label": "Production Items",
+            "fieldtype": "Table",
+            "options": "Production Batch Items",
+            "read_only": 1,
+            "description": "Filled automatically from the Sales Orders. Work Order progress updates as Klaes creates and runs the Work Orders."
+        },
+        {
             "fieldname": "production_notes",
             "label": "Production Notes",
             "fieldtype": "Small Text"
@@ -50,6 +58,7 @@
         "status",
         "source_system",
         "orders",
+        "items",
         "production_notes"
     ],
 
