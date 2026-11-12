@@ -4,8 +4,10 @@ An ERPNext Sales Order is ready when:
 1. It is submitted, has a Klaes production order number (O...), and is not
    Closed/Completed/On Hold.
 2. That document number exists in Klaes (VKBELEGSTUB).
-3. No Work Order (Draft or submitted) is linked to it yet.
-4. At least MIN_PAID_PERCENT of it has been paid (advances + invoice payments).
+3. It is not already in an active Klaes Production Batch.
+4. No Work Order (Draft or submitted) is linked to it yet.
+5. At least the "Minimum Paid (%)" from Production Planning Settings has been paid
+   (advances + invoice payments).
 """
 
 import frappe
@@ -13,7 +15,10 @@ from frappe.utils import flt
 
 from orders_to_produce.api.klaes_db import get_connection
 
-MIN_PAID_PERCENT = 50
+PLANNER_ROLES = ("Manufacturing User", "Manufacturing Manager", "System Manager")
+
+# A Sales Order in a batch with one of these statuses cannot go into another batch.
+ACTIVE_BATCH_STATUSES = ("Draft", "Ready", "In Progress")
 
 # SQL Server allows ~2100 parameters per query, so look numbers up in chunks.
 KLAES_CHUNK_SIZE = 500
@@ -23,12 +28,19 @@ KLAES_CHUNK_SIZE = 500
 def get_orders_for_planning():
 	"""Return Sales Orders ready for planning, plus skipped ones with the reason."""
 
+	frappe.only_for(PLANNER_ROLES)
+
 	candidates = get_candidate_sales_orders()
 	if not candidates:
 		return {"orders": [], "skipped": []}
 
+	min_paid_percent = flt(
+		frappe.db.get_single_value("Production Planning Settings", "min_paid_percent")
+	)
+
 	so_names = [so.name for so in candidates]
 	klaes_orders = get_klaes_orders([so.custom_klaes_document_number for so in candidates])
+	in_batches = get_active_batches(so_names)
 	with_work_orders = get_sales_orders_with_work_orders(so_names)
 	paid_amounts = get_paid_amounts(candidates)
 
@@ -42,9 +54,11 @@ def get_orders_for_planning():
 
 		if not klaes:
 			reason = "Klaes document number not found in Klaes"
+		elif so.name in in_batches:
+			reason = f"Already in batch {in_batches[so.name]}"
 		elif so.name in with_work_orders:
 			reason = "Work Order already exists"
-		elif paid_percent < MIN_PAID_PERCENT:
+		elif paid_percent < min_paid_percent:
 			reason = f"Only {paid_percent}% paid"
 		else:
 			reason = None
@@ -125,6 +139,36 @@ def get_klaes_orders(doc_numbers):
 		frappe.throw(f"Could not read orders from Klaes: {e}")
 
 	return found
+
+
+def get_active_batches(so_names, exclude_batch=None):
+	"""{sales_order: batch name} for Sales Orders already in an active batch.
+
+	`exclude_batch` lets a batch ignore itself when it re-validates on save.
+	"""
+
+	if not so_names:
+		return {}
+
+	rows = frappe.db.sql(
+		"""
+		SELECT pbo.sales_order, kpb.name
+		FROM `tabProduction Batch Orders` pbo
+		JOIN `tabKlaes Production Batch` kpb ON kpb.name = pbo.parent
+		WHERE pbo.parenttype = 'Klaes Production Batch'
+			AND pbo.sales_order IN %(so_names)s
+			AND kpb.status IN %(statuses)s
+			AND kpb.name != %(exclude_batch)s
+		""",
+		{
+			"so_names": tuple(so_names),
+			"statuses": ACTIVE_BATCH_STATUSES,
+			"exclude_batch": exclude_batch or "",
+		},
+		as_dict=True,
+	)
+
+	return {row.sales_order: row.name for row in rows}
 
 
 def get_sales_orders_with_work_orders(so_names):
