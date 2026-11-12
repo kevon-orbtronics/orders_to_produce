@@ -146,8 +146,37 @@ app_license = "mit"
 # 	}
 # }
 
+# Production Planning: keep Klaes Production Batches in step with their Work Orders.
+_batch_events = "orders_to_produce.production_planning.work_order_events"
+
+doc_events = {
+	"Work Order": {
+		"on_update": f"{_batch_events}.on_work_order_change",
+		"on_submit": f"{_batch_events}.on_work_order_change",
+		"on_cancel": f"{_batch_events}.on_work_order_change",
+		"on_update_after_submit": f"{_batch_events}.on_work_order_change",
+		"on_trash": f"{_batch_events}.on_work_order_trash",
+		"after_delete": f"{_batch_events}.on_work_order_change",
+	},
+	"Stock Entry": {
+		"on_submit": f"{_batch_events}.on_stock_entry_change",
+		"on_cancel": f"{_batch_events}.on_stock_entry_change",
+	},
+	"Job Card": {
+		"on_update": f"{_batch_events}.on_job_card_change",
+		"on_submit": f"{_batch_events}.on_job_card_change",
+		"on_cancel": f"{_batch_events}.on_job_card_change",
+	},
+}
+
 # Scheduled Tasks
 # ---------------
+
+scheduler_events = {
+	"hourly": [
+		f"{_batch_events}.sync_active_batches",
+	],
+}
 
 # scheduler_events = {
 # 	"all": [
