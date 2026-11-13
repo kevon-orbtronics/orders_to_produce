@@ -34,9 +34,12 @@ def create_batch(sales_orders, production_deadline, production_notes=None):
 	return batch.name
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def download_klaes_xml(batch):
-	"""Download the batch as a Klaes order-batch XML file, ready to import into Klaes."""
+	"""Download the batch as a Klaes order-batch XML file, ready to import into Klaes.
+
+	POST only: Frappe does not commit on GET, so the Draft -> Ready change would be lost.
+	"""
 
 	frappe.only_for(PLANNER_ROLES)
 
