@@ -136,10 +136,16 @@ def get_bom_materials(bom, multiplier=1.0, depth=0):
 		frappe.throw(f"BOM {bom} has phantom items nested more than 10 levels deep.")
 
 	materials = defaultdict(float)
-	lines = frappe.get_all(
-		"BOM Item",
-		filters={"parent": bom, "parenttype": "BOM"},
-		fields=["item_code", "qty_consumed_per_unit", "is_phantom_item", "bom_no"],
+	lines = frappe.db.sql(
+		"""
+		SELECT bi.item_code, bi.qty_consumed_per_unit, bi.is_phantom_item, bi.bom_no,
+			i.is_stock_item
+		FROM `tabBOM Item` bi
+		JOIN `tabItem` i ON i.name = bi.item_code
+		WHERE bi.parent = %(bom)s AND bi.parenttype = 'BOM'
+		""",
+		{"bom": bom},
+		as_dict=True,
 	)
 
 	for line in lines:
@@ -147,7 +153,8 @@ def get_bom_materials(bom, multiplier=1.0, depth=0):
 		if line.is_phantom_item and line.bom_no:
 			for item_code, sub_qty in get_bom_materials(line.bom_no, qty, depth + 1).items():
 				materials[item_code] += sub_qty
-		else:
+		elif line.is_stock_item:
+			# Non-stock lines (e.g. pricing-only items) need no stock.
 			materials[line.item_code] += qty
 
 	return materials
